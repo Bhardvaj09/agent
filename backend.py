@@ -6,13 +6,13 @@ from serpapi import GoogleSearch
 
 
 # ✅ Set your keys here
-openai.api_key="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"
+client = OpenAI(api_key="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")
 SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
 def analyze_query(user_query):
     prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
-    response = openai.chat.completions.create(
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",  # Ensure you use the correct model
         messages=[{"role": "user", "content": prompt}],
         max_tokens=30
