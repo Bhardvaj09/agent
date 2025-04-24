@@ -10,6 +10,16 @@ openai.api_key="sk-proj-vLuYiQ4CpyBQ8UQMrh1LxZ6i7cS86D_9dYo3U6F8hJzS5UKGjyDVZgM4
 SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
+def analyze_query(user_query):
+    prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
+    response = openai.Completion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=30
+    )
+    return response['choices'][0]['message']['content'].strip()
+
+         
 def perform_web_search(query):
     search = GoogleSearch({
         "q": query,
