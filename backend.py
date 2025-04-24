@@ -47,7 +47,7 @@ def extract_content(url):
 # --- Summarize using OpenAI ---
 def synthesize_information(contents):
     prompt = "Summarize this information into a clear, concise research answer:\n\n" + "\n\n".join(contents)
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=500,
