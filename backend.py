@@ -21,11 +21,12 @@ def analyze_query(user_query):
 
 # --- Perform Web Search ---
 def perform_web_search(query):
-    search = GoogleSearch({
+    params = {
         "q": query,
         "api_key": SERP_API_KEY,
         "num": 5
-    })
+    }
+    search = GoogleSearch(params)
     results = search.get_dict()
     urls = []
     if "organic_results" in results:
