@@ -20,7 +20,7 @@ def analyze_query(user_query):
     return response['choices'][0]['message']['content'].strip()
 
 # --- Perform Web Search ---
- def perform_web_search(query):
+def perform_web_search(query):
     search = GoogleSearch({
         "q": query,
         "api_key": SERP_API_KEY,
