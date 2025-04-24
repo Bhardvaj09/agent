@@ -20,44 +20,42 @@ def analyze_query(user_query):
     return response['choices'][0]['message']['content'].strip()
 
 # --- Perform Web Search ---
-         
-def perform_web_search(query):
+ def perform_web_search(query):
     search = GoogleSearch({
         "q": query,
         "api_key": SERP_API_KEY,
-        "engine": "google",  # This can be changed to other engines like Google News, Bing, etc.
+        "num": 5
     })
-    
-    # Remove any 'proxies' argument in GoogleSearch or SerpAPI initialization
-    results = search.get_dict()  # Get results as a dictionary
+    results = search.get_dict()
     urls = []
-    if 'organic_results' in results:
-        for item in results['organic_results']:
-            urls.append(item['link'])
+    if "organic_results" in results:
+        for result in results["organic_results"]:
+            if "link" in result:
+                urls.append(result["link"])
     return urls
 
-# --- Extract content ---
-def extract_content(url, proxies=None):
+# --- Extract content from URL ---
+def extract_content(url):
     try:
-        # If you need to use proxies for the requests, pass them here
-        response = requests.get(url, timeout=10, proxies=proxies) if proxies else requests.get(url, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        paragraphs = soup.find_all('p')
-        return " ".join(p.get_text() for p in paragraphs)[:2000]  # Limit to avoid overflow
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
+        paragraphs = soup.find_all("p")
+        return " ".join(p.get_text() for p in paragraphs)[:2000]
     except Exception as e:
         return ""
 
-# --- Summarize with OpenAI ---
+# --- Summarize using OpenAI ---
 def synthesize_information(contents):
-    prompt = "Summarize this information into a clear research answer:\n\n" + "\n\n".join(contents)
-    response = openai.Completion.create(
-        engine="text-davinci-003",  # Use the correct model from OpenAI
-        prompt=prompt,
-        max_tokens=500
+    prompt = "Summarize this information into a clear, concise research answer:\n\n" + "\n\n".join(contents)
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=500,
+        temperature=0.7
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message.content.strip()
 
-# --- Full Agent ---
+# --- Main Agent Function ---
 def research_agent(query):
     improved = analyze_query(query)
     urls = perform_web_search(improved)
