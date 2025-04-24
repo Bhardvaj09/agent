@@ -5,21 +5,25 @@ import openai
 
 # ✅ Set your keys here
 openai.api_key = "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"
-BING_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
+SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
 def analyze_query(user_query):
-    prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
-    openai.chat.completions.create(
+    messages = [
+        {"role": "system", "content": "You are a query optimization expert."},
+        {"role": "user", "content": f"Improve the following research query for accurate web results:\n\nOriginal: '{user_query}'\n\nImproved:"}
+    ]
+    response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
-        prompt=prompt,
+        messages=messages,
+        temperature=0.7,
         max_tokens=30
     )
-    return response.choices[0].text.strip().replace('"', '')
+    return response.choices[0].message.content.strip().replace('"', '')
 
-# --- Perform Bing Search ---
+# --- Perform Search with SerpAPI ---
 def perform_web_search(query):
-    headers = {"Ocp-Apim-Subscription-Key": BING_API_KEY}
+    headers = {"Ocp-Apim-Subscription-Key": SERPAPI_API_KEY}
     params = {"q": query, "count": 5}
     response = requests.get("https://api.bing.microsoft.com/v7.0/search", headers=headers, params=params)
     results = response.json()
