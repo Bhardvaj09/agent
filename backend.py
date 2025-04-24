@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 import openai
 
 # ✅ Set your keys here
-openai.api_key = "YOUR_OPENAI_API_KEY"
-BING_API_KEY = "YOUR_BING_API_KEY"
+openai.api_key = "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"
+BING_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
 def analyze_query(user_query):
