@@ -2,35 +2,25 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import openai
+from serpapi import GoogleSearch
 
 # ✅ Set your keys here
 openai.api_key="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"
 SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
-def analyze_query(user_query):
-    messages = [
-        {"role": "system", "content": "You are a query optimization expert."},
-        {"role": "user", "content": f"Improve the following research query for accurate web results:\n\nOriginal: '{user_query}'\n\nImproved:"}
-    ]
-    response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-        temperature=0.7,
-        max_tokens=30
-    )
-    return response.choices[0].message.content.strip().replace('"', '')
-
-# --- Perform Search with SerpAPI ---
 def perform_web_search(query):
-    headers = {"Ocp-Apim-Subscription-Key": SERPAPI_API_KEY}
-    params = {"q": query, "count": 5}
-    response = requests.get("https://api.bing.microsoft.com/v7.0/search", headers=headers, params=params)
-    results = response.json()
+    search = GoogleSearch({
+        "q": query,
+        "api_key": SERPAPI_API_KEY,
+        "engine": "google",  # This can be changed to other engines like Google News, Bing, etc.
+    })
+    
+    results = search.get_dict()  # Get results as a dictionary
     urls = []
-    if 'webPages' in results:
-        for item in results['webPages']['value']:
-            urls.append(item['url'])
+    if 'organic_results' in results:
+        for item in results['organic_results']:
+            urls.append(item['link'])
     return urls
 
 # --- Extract content ---
@@ -39,7 +29,7 @@ def extract_content(url):
         response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         paragraphs = soup.find_all('p')
-        return " ".join(p.get_text() for p in paragraphs)[:2000]
+        return " ".join(p.get_text() for p in paragraphs)[:2000]  # Limit to avoid overflow
     except:
         return ""
 
@@ -47,11 +37,11 @@ def extract_content(url):
 def synthesize_information(contents):
     prompt = "Summarize this information into a clear research answer:\n\n" + "\n\n".join(contents)
     response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
+        model="gpt-3.5-turbo",  # Use the correct model name from OpenAI
+        messages=[{"role": "user", "content": prompt}],
         max_tokens=500
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
 
 # --- Full Agent ---
 def research_agent(query):
