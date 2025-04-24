@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import openai
-from serpapi.google import GoogleSearch
+from serpapi import GoogleSearch
 
 
 # ✅ Set your keys here
