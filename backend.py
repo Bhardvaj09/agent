@@ -12,7 +12,7 @@ SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da
 # --- Query Analyzer ---
 def analyze_query(user_query):
     prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
-    response = openai.chat_completions.create(
+    response = openai.chat.completions.create(
         model="gpt-3.5-turbo",  # Ensure you use the correct model
         messages=[{"role": "user", "content": prompt}],
         max_tokens=30
