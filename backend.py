@@ -24,10 +24,11 @@ def analyze_query(user_query):
 def perform_web_search(query):
     search = GoogleSearch({
         "q": query,
-        "api_key": SERPAPI_API_KEY,
+        "api_key": SERP_API_KEY,
         "engine": "google",  # This can be changed to other engines like Google News, Bing, etc.
     })
     
+    # Remove any 'proxies' argument in GoogleSearch or SerpAPI initialization
     results = search.get_dict()  # Get results as a dictionary
     urls = []
     if 'organic_results' in results:
@@ -36,24 +37,25 @@ def perform_web_search(query):
     return urls
 
 # --- Extract content ---
-def extract_content(url):
+def extract_content(url, proxies=None):
     try:
-        response = requests.get(url, timeout=10)
+        # If you need to use proxies for the requests, pass them here
+        response = requests.get(url, timeout=10, proxies=proxies) if proxies else requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         paragraphs = soup.find_all('p')
         return " ".join(p.get_text() for p in paragraphs)[:2000]  # Limit to avoid overflow
-    except:
+    except Exception as e:
         return ""
 
 # --- Summarize with OpenAI ---
 def synthesize_information(contents):
     prompt = "Summarize this information into a clear research answer:\n\n" + "\n\n".join(contents)
     response = openai.Completion.create(
-        model="gpt-3.5-turbo",  # Use the correct model name from OpenAI
-        messages=[{"role": "user", "content": prompt}],
+        engine="text-davinci-003",  # Use the correct model from OpenAI
+        prompt=prompt,
         max_tokens=500
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].text.strip()
 
 # --- Full Agent ---
 def research_agent(query):
