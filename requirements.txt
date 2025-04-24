@@ -1,5 +1,5 @@
 streamlit
-google-search-results=2.4.2
+google-search-results
 serpapi
 openai==1.0.0
 requests
