@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import openai
 
 # ✅ Set your keys here
-openai.api_key="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"
+openai.api_key="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"
 SERP_API_KEY = "b29a8a610c6d564e92178262992e734a803221e4d0e33b898bdaea2a13b378da"
 
 # --- Query Analyzer ---
