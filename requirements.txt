@@ -1,6 +1,6 @@
 streamlit
 google-search-results
 serpapi
-openai
+openai==1.0.0
 requests
 beautifulsoup4
