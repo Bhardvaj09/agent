@@ -1,25 +1,32 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-import openai
 import re
-import json
 from urllib.parse import quote_plus
 
-# ✅ Set your keys here
-openai.api_key = "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"
+# Set up the OpenAI client explicitly to avoid any proxy issues
+import openai
+from openai import OpenAI
+
+# OpenAI API Key
+api_key = "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"
+
+# Create OpenAI client without proxies
+client = OpenAI(api_key=api_key)
 
 # --- Query Analyzer ---
 def analyze_query(user_query):
     prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
-    response = openai.chat.completions.create(
+    
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=30
     )
+    
     return response.choices[0].message.content.strip()
 
-# --- Alternative Web Search Function ---
+# --- Web Search Function ---
 def perform_web_search(query):
     # Create a safe search query
     encoded_query = quote_plus(query)
@@ -85,7 +92,7 @@ def synthesize_information(contents, query):
     prompt = f"""Summarize this information into a clear, concise research answer for the query: "{query}"\n\n""" + "\n\n".join(contents)
     
     try:
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
