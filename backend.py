@@ -1,28 +1,23 @@
+import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import openai
 
-# Set up OpenAI API key
-openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your actual OpenAI API key
-BING_API_KEY = "YOUR_BING_API_KEY"  # Replace with your Bing API key
+# ✅ Set your keys here
+openai.api_key = "YOUR_OPENAI_API_KEY"
+BING_API_KEY = "YOUR_BING_API_KEY"
 
-# Function to analyze the query and improve it
+# --- Query Analyzer ---
 def analyze_query(user_query):
-    prompt = f"""
-    You are a smart query analyst for a research agent. Improve the following research query for web search purposes. Focus it to get the most relevant and insightful web content.
-
-    Original query: "{user_query}"
-
-    Improved search query:
-    """
+    prompt = f"""Improve the following research query for accurate web results:\n\nOriginal: "{user_query}"\n\nImproved:"""
     response = openai.Completion.create(
-        engine="text-davinci-003",  # Change the engine as needed
-        prompt=prompt.strip(),
+        engine="text-davinci-003",
+        prompt=prompt,
         max_tokens=30
     )
     return response.choices[0].text.strip().replace('"', '')
 
-# Function to perform a web search using the Bing API
+# --- Perform Bing Search ---
 def perform_web_search(query):
     headers = {"Ocp-Apim-Subscription-Key": BING_API_KEY}
     params = {"q": query, "count": 5}
@@ -34,31 +29,54 @@ def perform_web_search(query):
             urls.append(item['url'])
     return urls
 
-# Function to extract content from a URL
+# --- Extract content ---
 def extract_content(url):
     try:
         response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         paragraphs = soup.find_all('p')
-        text = " ".join(p.get_text() for p in paragraphs if p.get_text())
-        return text[:2000]  # Limit content to avoid token overflow
-    except Exception as e:
+        return " ".join(p.get_text() for p in paragraphs)[:2000]
+    except:
         return ""
 
-# Function to synthesize content into a summary
+# --- Summarize with OpenAI ---
 def synthesize_information(contents):
-    prompt = "Summarize the following information into a concise research report:\n\n" + "\n\n".join(contents)
+    prompt = "Summarize this information into a clear research answer:\n\n" + "\n\n".join(contents)
     response = openai.Completion.create(
-        engine="text-davinci-003",  # Change the engine as needed
+        engine="text-davinci-003",
         prompt=prompt,
         max_tokens=500
     )
     return response.choices[0].text.strip()
 
-# Function to integrate all steps and perform web research
+# --- Full Agent ---
 def research_agent(query):
-    search_terms = analyze_query(query)
-    urls = perform_web_search(search_terms)
-    all_content = [extract_content(url) for url in urls if url]
-    summary = synthesize_information(all_content)
+    improved = analyze_query(query)
+    urls = perform_web_search(improved)
+    texts = [extract_content(url) for url in urls]
+    summary = synthesize_information(texts)
     return summary, urls
+
+# --- Streamlit UI ---
+st.set_page_config(page_title="Web Research Agent", layout="centered")
+st.title("🔍 Web Research Agent")
+st.markdown("Enter a topic or question. The agent will search the web, extract relevant data, and summarize it for you.")
+
+query = st.text_input("Enter your research query")
+search_btn = st.button("Start Research")
+
+if search_btn and query:
+    with st.spinner("Working on your request..."):
+        try:
+            summary, urls = research_agent(query)
+            st.success("Done!")
+
+            st.subheader("📄 Summary")
+            st.write(summary)
+
+            st.subheader("🔗 Sources")
+            for url in urls:
+                st.markdown(f"- [{url}]({url})")
+
+        except Exception as e:
+            st.error(f"Error: {e}")
